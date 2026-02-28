@@ -1,65 +1,59 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+    <div className="min-h-screen flex flex-col bg-white">
+      <header className="w-full py-4 px-4 md:py-6 md:px-8 flex justify-between items-center border-b">
+        <h1 className="text-2xl md:text-3xl font-bold text-purple-700 shrink-0">eduguide.ph</h1>
+        <div className="flex items-center gap-2 md:gap-6 ml-4">
+          <a href="/login" className="text-sm md:text-base text-purple-600 hover:underline hover:text-purple-700 transition-all duration-200 transform hover:scale-105 whitespace-nowrap">Sign in</a>
+          <a href="/register" className="bg-purple-600 text-white px-3 py-1.5 md:px-6 md:py-2 rounded-lg text-sm md:text-base hover:bg-purple-700 transition-all duration-200 transform hover:scale-105 hover:shadow-md whitespace-nowrap">
+            Register
           </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center py-12 animate-slide-in-up bg-gradient-to-b from-purple-50 to-white">
+        <h2 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+          Empowering Rural Students in Mindanao
+        </h2>
+        <p className="text-lg md:text-xl text-gray-700 max-w-3xl leading-relaxed mb-12">
+       EduGuide PH provides a free AI chatbot that offers personalized study help, clear explanations, quizzes, study plans, career suggestions, and offline functionality. Available in English, Cebuano, and Tagalog, the app is tailored to the needs of students in areas with spotty data and low-end smartphones, ensuring that no one is left behind in their educational journey.
+        </p>
+
+        {/* Mobile preview mockup */}
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-2xl overflow-hidden max-w-sm w-full hover:scale-105 transition-transform duration-300">
+          <div className="bg-gradient-to-b from-purple-100 to-white p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-purple-300 flex items-center justify-center text-2xl animate-pulse">📚</div>
+            </div>
+            <h3 className="text-2xl font-bold text-purple-700 mb-2">EduGuide PH</h3>
+            <p className="text-base text-gray-600 leading-relaxed">
+              Your trusted partner in academic and career success, built for the unique needs of rural Mindanao students.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col sm:flex-row gap-4">
+          <a href="/register" className="bg-purple-600 text-white px-8 py-4 rounded-lg hover:bg-purple-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 active:scale-95">
+            Get Started
+          </a>
+          <a href="/prompt" className="border border-purple-600 text-purple-600 px-8 py-4 rounded-lg hover:bg-purple-50 hover:border-purple-700 transition-all duration-300 font-semibold text-lg transform hover:scale-105 hover:-translate-y-1 active:scale-95">
+            Try Demo
           </a>
         </div>
       </main>
+
+      <footer className="w-full py-8 px-8 bg-gray-50 border-t">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-gray-600 text-sm">
+            © 2026 edugude.ph. Empowering students with AI-powered learning.
+          </p>
+          <div className="mt-4 space-x-6">
+            <a href="/login" className="text-purple-600 hover:underline text-sm">Sign In</a>
+            <a href="/register" className="text-purple-600 hover:underline text-sm">Register</a>
+            <a href="/prompt" className="text-purple-600 hover:underline text-sm">Try Prompt</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
