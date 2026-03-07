@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "../lib/supabase";
 
 function SunIcon(props) {
   return (
@@ -69,8 +71,10 @@ const CHAT_REPLIES = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [feedbackIndex, setFeedbackIndex] = useState(0);
   const [chatIndex, setChatIndex] = useState(0);
+  const [authChecked, setAuthChecked] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return "dark";
     const savedTheme = localStorage.getItem("eduguide-theme");
@@ -86,6 +90,45 @@ export default function Home() {
     }
     didMountThemeRef.current = true;
   }, [theme]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+
+      if (session?.user) {
+        router.replace("/prompt");
+        return;
+      }
+
+      setAuthChecked(true);
+    };
+
+    syncSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && event !== "SIGNED_OUT") {
+        router.replace("/prompt");
+        return;
+      }
+
+      if (event === "SIGNED_OUT" && !cancelled) {
+        setAuthChecked(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   useEffect(() => {
     const feedbackTimer = setInterval(() => {
@@ -104,6 +147,16 @@ export default function Home() {
 
   const isLight = theme === "light";
   const activeFeedback = FEEDBACK_POOL[feedbackIndex];
+
+  if (!authChecked) {
+    return (
+      <div className={`flex min-h-screen items-center justify-center ${isLight ? "bg-violet-50 text-slate-900" : "bg-slate-950 text-slate-100"}`}>
+        <div className={`rounded-3xl border px-6 py-4 text-sm shadow-xl ${isLight ? "border-violet-200 bg-white text-violet-700" : "border-violet-300/20 bg-violet-950/40 text-violet-100"}`}>
+          Loading EduGuide PH...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${isLight ? "bg-violet-50 text-slate-900" : "bg-slate-950 text-slate-100"}`}>
