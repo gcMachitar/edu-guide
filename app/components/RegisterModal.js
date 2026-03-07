@@ -1,23 +1,24 @@
-import React from 'react';
+﻿import React from 'react';
 
 export default function RegisterModal({ open, onClose }) {
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full relative animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md animate-fade-in rounded-2xl border border-violet-300/25 bg-violet-950/45 p-8 shadow-2xl shadow-violet-900/50">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold"
+          className="absolute right-3 top-3 rounded-md px-2 py-1 text-xl text-violet-100/80 transition hover:bg-violet-900/40 hover:text-white"
           aria-label="Close"
         >
-          &times;
+          x
         </button>
-        <h2 className="text-2xl font-bold mb-4 text-purple-700">Create an Account</h2>
-        <p className="mb-4 text-gray-600">To continue chatting, please register below:</p>
+        <h2 className="mb-3 text-2xl font-bold text-white">Create an Account</h2>
+        <p className="mb-5 text-sm text-violet-100/80">To continue chatting, please register first.</p>
         <form action="/register">
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
+            className="w-full rounded-lg bg-violet-400 px-4 py-2.5 font-semibold text-slate-950 transition hover:bg-violet-300"
           >
             Go to Registration
           </button>

@@ -1,4 +1,7 @@
-"use client";
+﻿"use client";
+
+import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
@@ -15,10 +18,11 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
@@ -28,9 +32,10 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(false);
+    setSuccessMessage('');
 
     try {
-      // Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -39,174 +44,160 @@ export default function Register() {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Wait for the trigger to create the profile (race condition fix)
-        await new Promise(resolve => setTimeout(resolve, 30000));
-
-        // Update the profile with additional information
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({
+          .upsert({
+            id: authData.user.id,
+            email: formData.email,
             first_name: formData.firstName,
             last_name: formData.lastName,
-            age: formData.age ? parseInt(formData.age) : null,
+            age: formData.age ? parseInt(formData.age, 10) : null,
             gender: formData.gender || null,
             grade_year: formData.gradeYear || null,
-          })
-          .eq('id', authData.user.id);
+          });
 
         if (profileError) throw profileError;
 
         setSuccess(true);
-        // Redirect to login page after successful registration
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
+        if (authData.session) {
+          setSuccessMessage('Registration successful. You can now sign in and start using EduGuide PH.');
+        } else {
+          setSuccessMessage('Registration successful. Check your email for the verification link before logging in.');
+        }
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (submitError) {
+      setError(submitError.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-md w-full space-y-6 bg-white p-10 rounded-2xl shadow-xl border border-gray-100 animate-slide-in-up">
-        <div className="text-center relative">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="absolute left-0 top-0 flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 px-3 py-1 rounded-lg transition-all duration-200 transform hover:scale-105 text-sm"
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-6 text-slate-100 sm:px-6 sm:py-10 lg:px-8">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(139,92,246,.32),transparent_35%),radial-gradient(circle_at_75%_10%,rgba(168,85,247,.24),transparent_35%),linear-gradient(180deg,#160a2f_0%,#1f1147_45%,#0f172a_100%)]" />
+
+      <div className="mx-auto w-full max-w-2xl animate-slide-in-up space-y-6 rounded-2xl border border-violet-300/20 bg-violet-950/35 p-6 shadow-2xl shadow-violet-900/40 backdrop-blur sm:space-y-7 sm:p-10">
+        <div className="relative text-center">
+          <Link
+            href="/"
+            className="inline-flex rounded-lg border border-violet-300/25 bg-violet-900/30 px-3 py-1 text-sm text-violet-100 transition hover:border-violet-300/45 hover:bg-violet-900/50 sm:absolute sm:left-0 sm:top-0"
             title="Back to Home"
           >
-            <span>←</span>
-            <span className="font-medium">Back</span>
-          </button>
-          <div className="mx-auto h-24 w-24 rounded-full bg-purple-200 flex items-center justify-center text-6xl mb-4">
-            👤
-          </div>
-          <h2 className="text-4xl font-bold text-purple-700">edugude.ph</h2>
+            &lt; Back
+          </Link>
+          <h1 className="inline-flex items-center gap-2.5 text-3xl font-bold text-white">
+            <Image src="/edu.png" alt="EduGuide PH logo" width={44} height={44} className="h-10 w-10 object-contain md:h-11 md:w-11" />
+            <span>EduGuide PH</span>
+          </h1>
+          <p className="mt-2 text-sm text-violet-100/80">Create your account and start learning</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          <div className="rounded-lg border border-rose-300/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-            Registration successful! Redirecting to login...
+          <div className="rounded-lg border border-emerald-300/40 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100">
+            {successMessage || 'Registration successful. Check your email for verification before logging in.'}
           </div>
         )}
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-400 text-sm">📧</span>
-            </div>
+          <input
+            type="email"
+            name="email"
+            placeholder="yourname@gmail.com"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
+            required
+          />
+
+          <input
+            type="password"
+            name="password"
+            placeholder="your password"
+            value={formData.password}
+            onChange={handleInputChange}
+            className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
+            required
+          />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
-              type="email"
-              name="email"
-              placeholder="yourname@gmail.com"
-              value={formData.email}
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              value={formData.firstName}
               onChange={handleInputChange}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
+              className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
               required
             />
-          </div>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-400 text-sm">🔒</span>
-            </div>
             <input
-              type="password"
-              name="password"
-              placeholder="yourpassword"
-              value={formData.password}
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              value={formData.lastName}
               onChange={handleInputChange}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
+              className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-xs">👤</span>
-              </div>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
-                required
-              />
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-xs">👤</span>
-              </div>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
-                required
-              />
-            </div>
-          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <input
+              type="number"
+              name="age"
+              placeholder="Age"
+              value={formData.age}
+              onChange={handleInputChange}
+              className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
+            />
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-xs">🎂</span>
-              </div>
-              <input
-                type="number"
-                name="age"
-                placeholder="Age"
-                value={formData.age}
-                onChange={handleInputChange}
-                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
-              />
-            </div>
             <select
               name="gender"
               value={formData.gender}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition bg-white"
+              className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
             >
               <option value="">Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-400 text-xs">📚</span>
-              </div>
-              <input
-                type="text"
-                name="gradeYear"
-                placeholder="Grade/Year"
-                value={formData.gradeYear}
-                onChange={handleInputChange}
-                className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm transition"
-              />
-            </div>
+
+            <input
+              type="text"
+              name="gradeYear"
+              placeholder="Grade/Year"
+              value={formData.gradeYear}
+              onChange={handleInputChange}
+              className="w-full rounded-lg border border-violet-300/30 bg-slate-950/65 px-4 py-3 text-sm text-white placeholder-violet-100/45 outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400/45"
+            />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-all duration-200 text-sm mt-2 transform hover:scale-105 hover:shadow-md active:scale-95 disabled:opacity-50"
+            className="w-full rounded-lg bg-violet-400 py-3 text-sm font-semibold text-slate-950 transition hover:bg-violet-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? 'Creating Account...' : 'Sign up'}
+            {loading ? 'Creating account...' : 'Sign up'}
           </button>
+
+          <p className="text-center text-sm text-violet-100/80">
+            Already have an account?{' '}
+            <Link href="/login" className="font-semibold text-violet-200 hover:text-white">
+              Sign in
+            </Link>
+          </p>
+
+          {success && (
+            <p className="text-center text-xs text-violet-200/90">
+              After verifying your email, you can sign in from the login page.
+            </p>
+          )}
         </form>
       </div>
     </div>
