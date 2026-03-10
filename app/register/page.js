@@ -78,28 +78,25 @@ export default function Register() {
     setSuccessMessage('');
 
     try {
+      const profileMetadata = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        age: formData.age ? parseInt(formData.age, 10) : null,
+        gender: formData.gender || null,
+        grade_year: formData.gradeYear || null,
+      };
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: profileMetadata,
+        },
       });
 
       if (authError) throw authError;
 
       if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            email: formData.email,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            age: formData.age ? parseInt(formData.age, 10) : null,
-            gender: formData.gender || null,
-            grade_year: formData.gradeYear || null,
-          });
-
-        if (profileError) throw profileError;
-
         setSuccess(true);
         if (authData.session) {
           setSuccessMessage('Registration successful. You can now sign in and start using EduGuide PH.');

@@ -71,9 +71,23 @@ CREATE POLICY "Users can create own chat messages" ON public.chat_messages
 -- Create function to handle user profile creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  provided_age TEXT := NEW.user_metadata->>'age';
 BEGIN
-  INSERT INTO public.profiles (id, email)
-  VALUES (NEW.id, NEW.email);
+  INSERT INTO public.profiles (id, email, first_name, last_name, age, gender, grade_year)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NULLIF(NEW.user_metadata->>'first_name', ''),
+    NULLIF(NEW.user_metadata->>'last_name', ''),
+    CASE
+      WHEN provided_age IS NULL OR provided_age = '' THEN NULL
+      WHEN provided_age ~ '^\d+$' THEN provided_age::INT
+      ELSE NULL
+    END,
+    NULLIF(NEW.user_metadata->>'gender', ''),
+    NULLIF(NEW.user_metadata->>'grade_year', '')
+  );
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
